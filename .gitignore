@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+
+# Logs
+*.log
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+
+# React Native - Android
+apps/mobile/android/.gradle/
+apps/mobile/android/app/build/
+
+# React Native - iOS
+apps/mobile/ios/Pods/
+apps/mobile/ios/build/
+apps/mobile/ios/DerivedData/
+apps/mobile/ios/*.xcworkspace/
+apps/mobile/ios/*.xcuserstate
+apps/mobile/ios/xcuserdata/
+
+# React Native - Bundler
+apps/mobile/.bundle/
