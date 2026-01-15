@@ -1,5 +1,7 @@
 import { Router } from 'express';
+import { authRoutes } from './authRoutes';
 
 export const routes = Router();
 
-// Add route modules here as features are built.
+// Auth routes: foundation for token issuance and validation.
+routes.use('/auth', authRoutes);
