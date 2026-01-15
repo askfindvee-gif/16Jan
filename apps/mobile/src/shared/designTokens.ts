@@ -3,69 +3,67 @@
 
 export const colors = {
   background: '#FFFFFF',
-  textPrimary: '#111111',
-  textSecondary: '#6B6B6B',
-  textMuted: '#9A9A9A',
+  textPrimary: '#000000',
+  textSecondary: '#4A4A4A',
+  textMuted: '#757575',
   textOnDark: '#FFFFFF',
-  borderStrong: '#111111',
-  borderSubtle: '#D9D9D9',
-  buttonPrimary: '#111111',
+  borderStrong: '#000000',
+  buttonPrimary: '#000000',
 };
 
 export const typography = {
-  displayPrimary: {
-    fontSize: 40,
-    lineHeight: 48,
+  titlePrimary: {
+    fontSize: 48,
+    lineHeight: 56,
+    fontWeight: '700' as const,
+    letterSpacing: -1.5,
+  },
+  titleSecondary: {
+    fontSize: 48,
+    lineHeight: 56,
     fontWeight: '700' as const,
   },
-  displaySecondary: {
-    fontSize: 32,
-    lineHeight: 40,
-    fontWeight: '600' as const,
-  },
-  headline: {
-    fontSize: 18,
-    lineHeight: 26,
-    fontWeight: '400' as const,
-  },
-  body: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '400' as const,
+  bodyPrimary: {
+    fontSize: 24,
+    lineHeight: 32,
+    fontWeight: '500' as const,
   },
   labelUpper: {
-    fontSize: 12,
-    lineHeight: 16,
-    fontWeight: '600' as const,
+    fontSize: 10,
+    lineHeight: 14,
+    fontWeight: '700' as const,
     letterSpacing: 2,
   },
-  metaUpper: {
+  inputText: {
+    fontSize: 32,
+    lineHeight: 40,
+    fontWeight: '400' as const,
+  },
+  footerUpper: {
     fontSize: 10,
     lineHeight: 14,
     fontWeight: '500' as const,
-    letterSpacing: 2.5,
+    letterSpacing: 2,
   },
 };
 
 export const spacing = {
-  xs: 4,
-  sm: 8,
-  md: 16,
-  lg: 24,
-  xl: 32,
-  '2xl': 40,
-  '3xl': 48,
-  '4xl': 64,
+  layoutHorizontal: 32,
+  topPadding: 60,
+  logoToTitle: 48,
+  titleToTagline: 32,
+  taglineToInput: 80,
+  footerBottom: 40,
+  buttonSidePadding: 16,
 };
 
 export const sizing = {
-  logoBox: 48,
-  buttonHeight: 56,
+  logoBox: 64,
+  buttonHeight: 72,
   iconBox: 40,
-  inputUnderline: 1,
+  inputUnderline: 1.5,
 };
 
 export const radii = {
   none: 0,
-  sm: 4,
 };
