@@ -6,6 +6,7 @@ export const authenticate = (
   res: Response,
   next: NextFunction,
 ) => {
+  // This middleware only verifies the JWT and extracts the user id.
   const header = req.headers.authorization;
 
   if (!header) {

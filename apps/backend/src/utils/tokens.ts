@@ -3,8 +3,9 @@ import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
 import { AuthProvider, RefreshTokenRecord } from '../domain/user';
 
+// Keep JWT payload small and non-sensitive.
 export type AccessTokenPayload = {
-  sub: string;
+  sub: string; // user id
   provider: AuthProvider;
   type: 'access';
 };
@@ -48,7 +49,13 @@ export const verifyAccessToken = (token: string): AccessTokenPayload => {
     audience: 'mobile',
   });
 
-  return payload as AccessTokenPayload;
+  const typed = payload as AccessTokenPayload;
+
+  if (typed.type !== 'access') {
+    throw new Error('Invalid token type');
+  }
+
+  return typed;
 };
 
 const hashRefreshToken = (token: string): string => {

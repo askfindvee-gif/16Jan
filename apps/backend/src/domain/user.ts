@@ -6,6 +6,8 @@ export type User = {
   phoneNumber?: string;
   authProvider: AuthProvider;
   createdAt: string;
+  lastLoginAt: string | null;
+  isActive: boolean;
   updatedAt: string;
 };
 

@@ -1,4 +1,4 @@
-import { AuthProvider } from '../domain/user';
+import { AuthProvider, User } from '../domain/user';
 
 declare global {
   namespace Express {
@@ -7,6 +7,7 @@ declare global {
         userId: string;
         provider: AuthProvider;
       };
+      user?: User;
     }
   }
 }

@@ -31,6 +31,7 @@ export type TokenPair = {
 };
 
 export const createAuthService = (repo: UserRepository) => {
+  // Creates a new user record with minimal validation.
   const createUser = (input: CreateUserInput): User => {
     const { email, phoneNumber, authProvider } = input;
 
@@ -63,20 +64,47 @@ export const createAuthService = (repo: UserRepository) => {
       email,
       phoneNumber,
       authProvider,
+      lastLoginAt: null,
+      isActive: true,
     });
   };
 
-  const issueTokensForUser = (userId: string): TokenPair => {
-    const user = repo.getUserById(userId);
+  // Finds an existing user or creates a new one.
+  const getOrCreateUser = (input: CreateUserInput): User => {
+    const { email, phoneNumber, authProvider } = input;
 
-    if (!user) {
-      throw new AuthError('User not found.', 404);
+    if (authProvider === 'google' && email) {
+      const existing = repo.getUserByEmail(email);
+      if (existing) {
+        return existing;
+      }
+    }
+
+    if (authProvider === 'sms' && phoneNumber) {
+      const existing = repo.getUserByPhoneNumber(phoneNumber);
+      if (existing) {
+        return existing;
+      }
+    }
+
+    return createUser(input);
+  };
+
+  // Issues tokens after a successful "login" (placeholder until real providers).
+  const issueTokens = (input: CreateUserInput): TokenPair => {
+    const user = getOrCreateUser(input);
+
+    if (!user.isActive) {
+      throw new AuthError('User is inactive.', 403);
     }
 
     const accessToken = signAccessToken(user.id, user.authProvider);
     const { token: refreshToken, record } = createRefreshToken(user.id);
+    const now = new Date().toISOString();
 
+    // Store refresh token server-side and update last login.
     repo.saveRefreshToken(record);
+    repo.updateUser(user.id, { lastLoginAt: now });
 
     return {
       accessToken,
@@ -86,6 +114,7 @@ export const createAuthService = (repo: UserRepository) => {
     };
   };
 
+  // Rotates refresh tokens to prevent replay attacks.
   const rotateRefreshToken = (refreshToken: string): TokenPair => {
     const tokenHash = getRefreshTokenHash(refreshToken);
     const existing = repo.getRefreshTokenByHash(tokenHash);
@@ -108,6 +137,10 @@ export const createAuthService = (repo: UserRepository) => {
       throw new AuthError('User not found.', 404);
     }
 
+    if (!user.isActive) {
+      throw new AuthError('User is inactive.', 403);
+    }
+
     const accessToken = signAccessToken(user.id, user.authProvider);
     const { token: newRefreshToken, record } = createRefreshToken(user.id);
     const now = new Date().toISOString();
@@ -123,9 +156,23 @@ export const createAuthService = (repo: UserRepository) => {
     };
   };
 
+  // Revokes a refresh token (logout).
+  const revokeRefreshToken = (refreshToken: string) => {
+    const tokenHash = getRefreshTokenHash(refreshToken);
+    const existing = repo.getRefreshTokenByHash(tokenHash);
+
+    if (!existing || existing.revokedAt) {
+      return;
+    }
+
+    repo.revokeRefreshToken(existing.id, new Date().toISOString());
+  };
+
   return {
     createUser,
-    issueTokensForUser,
+    getOrCreateUser,
+    issueTokens,
     rotateRefreshToken,
+    revokeRefreshToken,
   };
 };

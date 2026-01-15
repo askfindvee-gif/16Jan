@@ -1,5 +1,5 @@
 import { RefreshTokenRecord, User } from '../domain/user';
-import { CreateUserInput, UserRepository } from './userRepository';
+import { CreateUserInput, UpdateUserInput, UserRepository } from './userRepository';
 
 // Simple in-memory store for early development and local testing.
 // Swap this with a real database repository later.
@@ -15,6 +15,24 @@ export const createInMemoryUserRepository = (): UserRepository => {
     users.set(user.id, user);
 
     return user;
+  };
+
+  const updateUser = (id: string, updates: UpdateUserInput): User | undefined => {
+    const current = users.get(id);
+
+    if (!current) {
+      return undefined;
+    }
+
+    const updated: User = {
+      ...current,
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+
+    users.set(id, updated);
+
+    return updated;
   };
 
   const getUserById = (id: string): User | undefined => users.get(id);
@@ -73,6 +91,7 @@ export const createInMemoryUserRepository = (): UserRepository => {
 
   return {
     createUser,
+    updateUser,
     getUserById,
     getUserByEmail,
     getUserByPhoneNumber,
