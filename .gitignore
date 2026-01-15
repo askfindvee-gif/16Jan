@@ -20,6 +20,7 @@ build/
 # React Native - Android
 apps/mobile/android/.gradle/
 apps/mobile/android/app/build/
+apps/mobile/android/app/google-services.json
 
 # React Native - iOS
 apps/mobile/ios/Pods/
@@ -28,6 +29,7 @@ apps/mobile/ios/DerivedData/
 apps/mobile/ios/*.xcworkspace/
 apps/mobile/ios/*.xcuserstate
 apps/mobile/ios/xcuserdata/
+apps/mobile/ios/GoogleService-Info.plist
 
 # React Native - Bundler
 apps/mobile/.bundle/

@@ -47,6 +47,10 @@ export const createInMemoryUserRepository = (): UserRepository => {
     );
   };
 
+  const getUserByGoogleId = (googleId: string): User | undefined => {
+    return Array.from(users.values()).find(user => user.googleId === googleId);
+  };
+
   const saveRefreshToken = (record: RefreshTokenRecord) => {
     refreshTokensById.set(record.id, record);
     refreshTokensByHash.set(record.tokenHash, record);
@@ -95,6 +99,7 @@ export const createInMemoryUserRepository = (): UserRepository => {
     getUserById,
     getUserByEmail,
     getUserByPhoneNumber,
+    getUserByGoogleId,
     saveRefreshToken,
     getRefreshTokenByHash,
     revokeRefreshToken,

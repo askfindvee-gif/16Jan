@@ -4,6 +4,7 @@ export type User = {
   id: string;
   email?: string;
   phoneNumber?: string;
+  googleId?: string;
   authProvider: AuthProvider;
   createdAt: string;
   lastLoginAt: string | null;

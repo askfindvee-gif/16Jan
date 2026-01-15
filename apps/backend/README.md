@@ -15,7 +15,8 @@ The server is intentionally minimal and feature-free for now.
 
 ## Auth Foundation
 The auth module is a starter setup for token-based login:
-- POST `/api/auth/token` -> issue access + refresh tokens (creates user if needed)
+- POST `/api/auth/google` -> exchange Google ID token for app tokens
+- POST `/api/auth/token` -> issue access + refresh tokens (SMS flow later)
 - POST `/api/auth/refresh` -> rotate refresh tokens
 - POST `/api/auth/logout` -> revoke refresh token
 - GET `/api/auth/me` -> return current user
@@ -32,3 +33,33 @@ This uses an in-memory repository for now (no database yet).
 Token expiry is configured with:
 - `ACCESS_TOKEN_TTL` (default `15m`)
 - `REFRESH_TOKEN_TTL` (default `30d`)
+- `GOOGLE_CLIENT_ID` (Web client ID from Google Cloud)
+
+## Google SSO (Simple English)
+Why backend verification is required:
+- The phone app can be tricked. The backend is the only place we trust.
+- Google signs the ID token. The backend checks the signature with Google.
+
+Google token vs app JWT:
+- Google ID token proves the user signed in with Google.
+- Our app JWT is what we use to call our own API.
+- We never store Google access tokens on our server.
+
+Step-by-step Google login flow:
+1) App signs in with Google and gets a Google ID token.
+2) App sends the ID token to `/api/auth/google`.
+3) Backend verifies the token with Google.
+4) Backend finds or creates the user.
+5) Backend returns our access + refresh tokens.
+
+Common mistakes teams make:
+- Trusting client-only verification (not safe).
+- Accepting any email without checking Google’s signature.
+- Sending Google access tokens to the backend instead of ID tokens.
+- Putting sensitive data inside JWTs.
+- Forgetting refresh token rotation.
+
+## Edge Cases (Handled)
+- New device or reinstall → user logs in again, new refresh token is issued.
+- Google email change → backend updates the stored email if safe.
+- Email already linked to SMS → backend blocks Google login to avoid takeover.

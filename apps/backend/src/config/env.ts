@@ -4,6 +4,7 @@ type Env = {
   jwtRefreshSecret: string;
   accessTokenTtl: string;
   refreshTokenTtl: string;
+  googleClientId: string;
 };
 
 const parsePort = (value: string | undefined, fallback: number): number => {
@@ -30,4 +31,5 @@ export const env: Env = {
   jwtRefreshSecret: readEnv('JWT_REFRESH_SECRET', 'dev-refresh-secret-change-me'),
   accessTokenTtl: readEnv('ACCESS_TOKEN_TTL', '15m'),
   refreshTokenTtl: readEnv('REFRESH_TOKEN_TTL', '30d'),
+  googleClientId: readEnv('GOOGLE_CLIENT_ID', ''),
 };
