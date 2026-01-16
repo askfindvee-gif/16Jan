@@ -13,10 +13,9 @@ The server is intentionally minimal and feature-free for now.
 - `src/middlewares` -> auth and request middleware
 - `src/utils` -> helper utilities (token helpers live here)
 
-## Auth Foundation
-The auth module is a starter setup for token-based login:
+## Auth Foundation (Google SSO Only)
+The auth module supports Google SSO only:
 - POST `/api/auth/google` -> exchange Google ID token for app tokens
-- POST `/api/auth/token` -> issue access + refresh tokens (SMS flow later)
 - POST `/api/auth/refresh` -> rotate refresh tokens
 - POST `/api/auth/logout` -> revoke refresh token
 - GET `/api/auth/me` -> return current user
@@ -24,11 +23,12 @@ The auth module is a starter setup for token-based login:
 This uses an in-memory repository for now (no database yet).
 
 ## Token Lifecycle (Simple English)
-1) The app calls `/auth/token` to get an access token and refresh token.
-2) The access token is short-lived and used on every API call.
-3) When it expires, the app calls `/auth/refresh` with the refresh token.
-4) The backend returns a new access token and a new refresh token.
-5) On logout, `/auth/logout` revokes the refresh token so it can’t be used.
+1) The app signs in with Google and gets a Google ID token.
+2) The app calls `/auth/google` to get an access token and refresh token.
+3) The access token is short-lived and used on every API call.
+4) When it expires, the app calls `/auth/refresh` with the refresh token.
+5) The backend returns a new access token and a new refresh token.
+6) On logout, `/auth/logout` revokes the refresh token so it can’t be used.
 
 Token expiry is configured with:
 - `ACCESS_TOKEN_TTL` (default `15m`)
@@ -49,8 +49,9 @@ Step-by-step Google login flow:
 1) App signs in with Google and gets a Google ID token.
 2) App sends the ID token to `/api/auth/google`.
 3) Backend verifies the token with Google.
-4) Backend finds or creates the user.
-5) Backend returns our access + refresh tokens.
+4) Backend extracts full name, email, Google user ID, and profile image (if present).
+5) Backend finds or creates the user with status `PROFILE_INCOMPLETE`.
+6) Backend returns our access + refresh tokens.
 
 Common mistakes teams make:
 - Trusting client-only verification (not safe).
@@ -62,4 +63,4 @@ Common mistakes teams make:
 ## Edge Cases (Handled)
 - New device or reinstall → user logs in again, new refresh token is issued.
 - Google email change → backend updates the stored email if safe.
-- Email already linked to SMS → backend blocks Google login to avoid takeover.
+- Email already linked to another Google user → backend blocks login to avoid takeover.

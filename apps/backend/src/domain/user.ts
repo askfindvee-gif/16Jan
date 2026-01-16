@@ -1,11 +1,15 @@
-export type AuthProvider = 'google' | 'sms';
+export type AuthProvider = 'google';
+
+export type UserStatus = 'PROFILE_INCOMPLETE' | 'ACTIVE';
 
 export type User = {
   id: string;
   email?: string;
-  phoneNumber?: string;
   googleId?: string;
+  fullName?: string;
+  profileImageUrl?: string;
   authProvider: AuthProvider;
+  status: UserStatus;
   createdAt: string;
   lastLoginAt: string | null;
   isActive: boolean;

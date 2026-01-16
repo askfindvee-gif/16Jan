@@ -41,12 +41,6 @@ export const createInMemoryUserRepository = (): UserRepository => {
     return Array.from(users.values()).find(user => user.email === email);
   };
 
-  const getUserByPhoneNumber = (phoneNumber: string): User | undefined => {
-    return Array.from(users.values()).find(
-      user => user.phoneNumber === phoneNumber,
-    );
-  };
-
   const getUserByGoogleId = (googleId: string): User | undefined => {
     return Array.from(users.values()).find(user => user.googleId === googleId);
   };
@@ -98,7 +92,6 @@ export const createInMemoryUserRepository = (): UserRepository => {
     updateUser,
     getUserById,
     getUserByEmail,
-    getUserByPhoneNumber,
     getUserByGoogleId,
     saveRefreshToken,
     getRefreshTokenByHash,
