@@ -1,7 +1,7 @@
 import { GoogleSignin, statusCodes } from '@react-native-google-signin/google-signin';
 import { config } from '../../shared/config';
 import { saveRefreshToken } from './tokenStorage';
-import { AuthTokens } from './types';
+import { AuthTokens, GoogleProfile } from './types';
 
 // Configure Google Sign-In once at app startup.
 export const configureGoogleSignIn = () => {
@@ -12,7 +12,7 @@ export const configureGoogleSignIn = () => {
 
 // Sign in with Google and exchange the ID token for backend tokens.
 export type GoogleSignInResult =
-  | { status: 'success'; tokens: AuthTokens }
+  | { status: 'success'; tokens: AuthTokens; profile: GoogleProfile }
   | { status: 'cancelled' };
 
 export const signInWithGoogle = async (): Promise<GoogleSignInResult> => {
@@ -42,7 +42,18 @@ export const signInWithGoogle = async (): Promise<GoogleSignInResult> => {
     // Store refresh token securely. Access token should live in memory.
     await saveRefreshToken(tokens.refreshToken);
 
-    return { status: 'success', tokens };
+    if (!userInfo.user.email || !userInfo.user.id) {
+      throw new Error('Google profile is missing required fields.');
+    }
+
+    const profile: GoogleProfile = {
+      fullName: userInfo.user.name ?? '',
+      email: userInfo.user.email,
+      googleId: userInfo.user.id,
+      profileImageUrl: userInfo.user.photo ?? undefined,
+    };
+
+    return { status: 'success', tokens, profile };
   } catch (error: any) {
     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
       return { status: 'cancelled' };

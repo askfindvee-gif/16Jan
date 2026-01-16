@@ -9,9 +9,9 @@ export const AuthenticatedScreen = () => {
   return (
     <ScreenContainer style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>Signed in</Text>
+        <Text style={styles.title}>Account ready</Text>
         <Text style={styles.body}>
-          Your session is active. Next step: profile completion.
+          Your profile is complete. You can now continue.
         </Text>
       </View>
       <Text style={styles.helper}>Access token stored in memory.</Text>

@@ -7,7 +7,7 @@ import {
   View,
 } from 'react-native';
 import { signInWithGoogle } from '../../data/auth/googleSignIn';
-import type { AuthTokens } from '../../data/auth/types';
+import type { AuthTokens, GoogleProfile } from '../../data/auth/types';
 import { APP_NAME, APP_TAGLINE } from '../../shared/constants';
 import { defaultTheme } from '../../shared/theme';
 import { ScreenContainer } from '../components/ScreenContainer';
@@ -15,7 +15,7 @@ import { ScreenContainer } from '../components/ScreenContainer';
 type AuthState = 'idle' | 'loading' | 'success' | 'error';
 
 type LoginScreenProps = {
-  onAuthenticated: (tokens: AuthTokens) => void;
+  onAuthenticated: (tokens: AuthTokens, profile: GoogleProfile) => void;
 };
 
 const theme = defaultTheme;
@@ -49,7 +49,7 @@ export const LoginScreen = ({ onAuthenticated }: LoginScreenProps) => {
 
       setAuthState('success');
       setStatusMessage('Signed in. Redirecting...');
-      onAuthenticated(result.tokens);
+      onAuthenticated(result.tokens, result.profile);
     } catch (error) {
       const message =
         error instanceof Error ? error.message : 'Google sign-in failed.';
