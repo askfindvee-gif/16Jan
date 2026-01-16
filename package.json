@@ -1,0 +1,12 @@
+{
+  "name": "askfindvee-monorepo",
+  "private": true,
+  "scripts": {
+    "mobile:start": "npm --prefix apps/mobile start",
+    "mobile:android": "npm --prefix apps/mobile run android",
+    "mobile:ios": "npm --prefix apps/mobile run ios",
+    "backend:dev": "npm --prefix apps/backend run dev",
+    "backend:build": "npm --prefix apps/backend run build",
+    "backend:start": "npm --prefix apps/backend run start"
+  }
+}
