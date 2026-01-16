@@ -1,6 +1,6 @@
 import crypto from 'crypto';
 import { env } from '../config/env';
-import { AuthProvider, User } from '../domain/user';
+import { AuthProvider, User, UserStatus } from '../domain/user';
 import { UserRepository } from '../repositories/userRepository';
 import {
   createRefreshToken,
@@ -19,10 +19,12 @@ export class AuthError extends Error {
 }
 
 type CreateUserInput = {
-  email?: string;
-  phoneNumber?: string;
-  googleId?: string;
+  email: string;
+  googleId: string;
+  fullName?: string;
+  profileImageUrl?: string;
   authProvider: AuthProvider;
+  status: UserStatus;
 };
 
 export type TokenPair = {
@@ -35,74 +37,46 @@ export type TokenPair = {
 export const createAuthService = (repo: UserRepository) => {
   // Creates a new user record with minimal validation.
   const createUser = (input: CreateUserInput): User => {
-    const { email, phoneNumber, authProvider, googleId } = input;
+    const {
+      email,
+      googleId,
+      fullName,
+      profileImageUrl,
+      authProvider,
+      status,
+    } = input;
 
-    if (authProvider !== 'google' && authProvider !== 'sms') {
-      throw new AuthError('Auth provider must be google or sms.', 422);
+    if (authProvider !== 'google') {
+      throw new AuthError('Auth provider must be google.', 422);
     }
 
-    if (!email && !phoneNumber) {
-      throw new AuthError('Email or phone number is required.', 422);
-    }
-
-    if (authProvider === 'google' && !email) {
+    if (!email) {
       throw new AuthError('Google login requires an email.', 422);
     }
 
-    if (authProvider === 'sms' && !phoneNumber) {
-      throw new AuthError('SMS login requires a phone number.', 422);
-    }
-
-    if (authProvider === 'sms' && googleId) {
-      throw new AuthError('SMS login cannot include a Google user id.', 422);
-    }
-
-    if (authProvider === 'google' && !googleId) {
+    if (!googleId) {
       throw new AuthError('Google login requires a Google user id.', 422);
     }
 
-    if (email && repo.getUserByEmail(email)) {
+    if (repo.getUserByEmail(email)) {
       throw new AuthError('A user with this email already exists.', 409);
     }
 
-    if (phoneNumber && repo.getUserByPhoneNumber(phoneNumber)) {
-      throw new AuthError('A user with this phone number already exists.', 409);
-    }
-
-    if (googleId && repo.getUserByGoogleId(googleId)) {
+    if (repo.getUserByGoogleId(googleId)) {
       throw new AuthError('A user with this Google account already exists.', 409);
     }
 
     return repo.createUser({
       id: crypto.randomUUID(),
       email,
-      phoneNumber,
       googleId,
+      fullName,
+      profileImageUrl,
       authProvider,
+      status,
       lastLoginAt: null,
       isActive: true,
     });
-  };
-
-  // Finds an existing user or creates a new one.
-  const getOrCreateUser = (input: CreateUserInput): User => {
-    const { email, phoneNumber, authProvider } = input;
-
-    if (authProvider === 'google' && email) {
-      const existing = repo.getUserByEmail(email);
-      if (existing) {
-        return existing;
-      }
-    }
-
-    if (authProvider === 'sms' && phoneNumber) {
-      const existing = repo.getUserByPhoneNumber(phoneNumber);
-      if (existing) {
-        return existing;
-      }
-    }
-
-    return createUser(input);
   };
 
   const issueTokensForUser = (user: User): TokenPair => {
@@ -124,16 +98,6 @@ export const createAuthService = (repo: UserRepository) => {
       tokenType: 'Bearer',
       accessTokenExpiresIn: env.accessTokenTtl,
     };
-  };
-
-  // Issues tokens after a successful "login" (placeholder until real SMS flow).
-  const issueTokens = (input: CreateUserInput): TokenPair => {
-    if (input.authProvider === 'google') {
-      throw new AuthError('Use /auth/google for Google login.', 422);
-    }
-
-    const user = getOrCreateUser(input);
-    return issueTokensForUser(user);
   };
 
   // Rotates refresh tokens to prevent replay attacks.
@@ -235,13 +199,36 @@ export const createAuthService = (repo: UserRepository) => {
 
     const userByGoogleId = repo.getUserByGoogleId(profile.googleId);
 
+    const getProfileUpdates = (user: User) => {
+      const updates: Partial<User> = {};
+
+      if (profile.fullName && profile.fullName !== user.fullName) {
+        updates.fullName = profile.fullName;
+      }
+
+      if (
+        profile.profileImageUrl &&
+        profile.profileImageUrl !== user.profileImageUrl
+      ) {
+        updates.profileImageUrl = profile.profileImageUrl;
+      }
+
+      return updates;
+    };
+
     if (userByGoogleId) {
       if (userByGoogleId.email !== profile.email) {
-        if (repo.getUserByEmail(profile.email)) {
+        const existingByEmail = repo.getUserByEmail(profile.email);
+        if (existingByEmail && existingByEmail.id !== userByGoogleId.id) {
           throw new AuthError('Email already belongs to another account.', 409);
         }
 
         repo.updateUser(userByGoogleId.id, { email: profile.email });
+      }
+
+      const updates = getProfileUpdates(userByGoogleId);
+      if (Object.keys(updates).length > 0) {
+        repo.updateUser(userByGoogleId.id, updates);
       }
 
       return issueTokensForUser(userByGoogleId);
@@ -250,21 +237,23 @@ export const createAuthService = (repo: UserRepository) => {
     const userByEmail = repo.getUserByEmail(profile.email);
 
     if (userByEmail) {
-      if (userByEmail.authProvider !== 'google') {
-        throw new AuthError(
-          'This email is already linked to SMS login.',
-          409,
-        );
+      repo.updateUser(userByEmail.id, { googleId: profile.googleId });
+
+      const updates = getProfileUpdates(userByEmail);
+      if (Object.keys(updates).length > 0) {
+        repo.updateUser(userByEmail.id, updates);
       }
 
-      repo.updateUser(userByEmail.id, { googleId: profile.googleId });
       return issueTokensForUser(userByEmail);
     }
 
     const user = createUser({
       email: profile.email,
       googleId: profile.googleId,
+      fullName: profile.fullName,
+      profileImageUrl: profile.profileImageUrl,
       authProvider: 'google',
+      status: 'PROFILE_INCOMPLETE',
     });
 
     return issueTokensForUser(user);
@@ -272,8 +261,6 @@ export const createAuthService = (repo: UserRepository) => {
 
   return {
     createUser,
-    getOrCreateUser,
-    issueTokens,
     rotateRefreshToken,
     revokeRefreshToken,
     loginWithGoogleIdToken,

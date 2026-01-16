@@ -6,6 +6,8 @@ export type GoogleProfile = {
   googleId: string;
   emailVerified: boolean;
   expiresAtMs: number;
+  fullName?: string;
+  profileImageUrl?: string;
 };
 
 const googleClient = new OAuth2Client(env.googleClientId);
@@ -31,5 +33,7 @@ export const verifyGoogleIdToken = async (
     emailVerified:
       payload.email_verified === true || payload.email_verified === 'true',
     expiresAtMs: payload.exp * 1000,
+    fullName: payload.name ?? undefined,
+    profileImageUrl: payload.picture ?? undefined,
   };
 };
