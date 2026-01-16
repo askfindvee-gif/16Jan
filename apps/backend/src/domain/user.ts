@@ -8,6 +8,12 @@ export type User = {
   googleId?: string;
   fullName?: string;
   profileImageUrl?: string;
+  address?: string;
+  district?: string;
+  location?: {
+    latitude: number;
+    longitude: number;
+  };
   authProvider: AuthProvider;
   status: UserStatus;
   createdAt: string;

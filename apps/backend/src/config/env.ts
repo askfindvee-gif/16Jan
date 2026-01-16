@@ -5,6 +5,9 @@ type Env = {
   accessTokenTtl: string;
   refreshTokenTtl: string;
   googleClientId: string;
+  geocodingBaseUrl: string;
+  geocodingUserAgent: string;
+  geocodingTimeoutMs: number;
 };
 
 const parsePort = (value: string | undefined, fallback: number): number => {
@@ -25,6 +28,12 @@ const readEnv = (key: string, fallback: string): string => {
   return value && value.length > 0 ? value : fallback;
 };
 
+const readNumber = (key: string, fallback: number): number => {
+  const raw = process.env[key];
+  const parsed = Number(raw ?? fallback);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+};
+
 export const env: Env = {
   port: parsePort(process.env.PORT, 4000),
   jwtAccessSecret: readEnv('JWT_ACCESS_SECRET', 'dev-access-secret-change-me'),
@@ -32,4 +41,13 @@ export const env: Env = {
   accessTokenTtl: readEnv('ACCESS_TOKEN_TTL', '15m'),
   refreshTokenTtl: readEnv('REFRESH_TOKEN_TTL', '30d'),
   googleClientId: readEnv('GOOGLE_CLIENT_ID', ''),
+  geocodingBaseUrl: readEnv(
+    'GEOCODING_BASE_URL',
+    'https://nominatim.openstreetmap.org/reverse',
+  ),
+  geocodingUserAgent: readEnv(
+    'GEOCODING_USER_AGENT',
+    'RapidResponseTeam/1.0',
+  ),
+  geocodingTimeoutMs: readNumber('GEOCODING_TIMEOUT_MS', 8000),
 };

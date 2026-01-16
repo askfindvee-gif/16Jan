@@ -19,6 +19,8 @@ The auth module supports Google SSO only:
 - POST `/api/auth/refresh` -> rotate refresh tokens
 - POST `/api/auth/logout` -> revoke refresh token
 - GET `/api/auth/me` -> return current user
+- PATCH `/api/profile` -> update profile details after Google sign-in
+- POST `/api/location/reverse` -> reverse geocode coordinates to address/district
 
 This uses an in-memory repository for now (no database yet).
 
@@ -34,6 +36,9 @@ Token expiry is configured with:
 - `ACCESS_TOKEN_TTL` (default `15m`)
 - `REFRESH_TOKEN_TTL` (default `30d`)
 - `GOOGLE_CLIENT_ID` (Web client ID from Google Cloud)
+- `GEOCODING_BASE_URL` (default Nominatim endpoint)
+- `GEOCODING_USER_AGENT` (required by Nominatim usage policy)
+- `GEOCODING_TIMEOUT_MS` (default `8000`)
 
 ## Google SSO (Simple English)
 Why backend verification is required:

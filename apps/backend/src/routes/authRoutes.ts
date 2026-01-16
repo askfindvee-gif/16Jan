@@ -1,12 +1,11 @@
 import { Router } from 'express';
 import { authenticate } from '../middlewares/authenticate';
 import { createUserContext } from '../middlewares/attachUser';
-import { createInMemoryUserRepository } from '../repositories/inMemoryUserRepository';
+import { userRepository } from '../repositories/userStore';
 import { AuthError, createAuthService } from '../services/authService';
 
-const repo = createInMemoryUserRepository();
-const authService = createAuthService(repo);
-const userContext = createUserContext(repo);
+const authService = createAuthService(userRepository);
+const userContext = createUserContext(userRepository);
 
 export const authRoutes = Router();
 
