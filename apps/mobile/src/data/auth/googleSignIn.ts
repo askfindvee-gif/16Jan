@@ -11,7 +11,11 @@ export const configureGoogleSignIn = () => {
 };
 
 // Sign in with Google and exchange the ID token for backend tokens.
-export const signInWithGoogle = async (): Promise<AuthTokens> => {
+export type GoogleSignInResult =
+  | { status: 'success'; tokens: AuthTokens }
+  | { status: 'cancelled' };
+
+export const signInWithGoogle = async (): Promise<GoogleSignInResult> => {
   try {
     await GoogleSignin.hasPlayServices({ showPlayServicesUpdateDialog: true });
     const userInfo = await GoogleSignin.signIn();
@@ -38,10 +42,10 @@ export const signInWithGoogle = async (): Promise<AuthTokens> => {
     // Store refresh token securely. Access token should live in memory.
     await saveRefreshToken(tokens.refreshToken);
 
-    return tokens;
+    return { status: 'success', tokens };
   } catch (error: any) {
     if (error.code === statusCodes.SIGN_IN_CANCELLED) {
-      throw new Error('Google sign-in was cancelled.');
+      return { status: 'cancelled' };
     }
 
     if (error.code === statusCodes.IN_PROGRESS) {
